@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 
@@ -14,6 +13,12 @@ type ShortenRequest struct {
 
 type ShortenResponse struct {
 	ShortURL string `json:"short_url"`
+}
+
+type StatsResponse struct {
+	Code        string `json:"code"`
+	OriginalURL string `json:"original_url"`
+	ClickCount  int    `json:"click_count"`
 }
 
 type ShortenerHandler struct {
@@ -42,7 +47,20 @@ func (h *ShortenerHandler) Shorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := ShortenResponse{ShortURL: "http://localhost:8080/" + code}
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	if forwardedProto := r.Header.Get("X-Forwarded-Proto"); forwardedProto != "" {
+		scheme = forwardedProto
+	}
+
+	host := r.Host
+	if host == "" {
+		host = "localhost:8080"
+	}
+
+	resp := ShortenResponse{ShortURL: scheme + "://" + host + "/" + code}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
@@ -54,7 +72,7 @@ func (h *ShortenerHandler) Redirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orig, err := h.svc.Resolve(context.Background(), code)
+	orig, err := h.svc.Resolve(r.Context(), code)
 	if err != nil {
 		if _, ok := err.(*services.NotFoundError); ok || err == services.ErrNotFound {
 			http.NotFound(w, r)
@@ -65,4 +83,41 @@ func (h *ShortenerHandler) Redirect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, orig, http.StatusFound)
+}
+
+func (h *ShortenerHandler) Stats(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	const statsPrefix = "/stats/"
+	if len(r.URL.Path) <= len(statsPrefix) || r.URL.Path[:len(statsPrefix)] != statsPrefix {
+		http.NotFound(w, r)
+		return
+	}
+
+	code := r.URL.Path[len(statsPrefix):]
+	if code == "" {
+		http.NotFound(w, r)
+		return
+	}
+
+	stats, err := h.svc.Stats(r.Context(), code)
+	if err != nil {
+		if _, ok := err.(*services.NotFoundError); ok || err == services.ErrNotFound {
+			http.NotFound(w, r)
+			return
+		}
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+
+	resp := StatsResponse{
+		Code:        code,
+		OriginalURL: stats.OriginalURL,
+		ClickCount:  stats.ClickCount,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }
