@@ -16,6 +16,10 @@ func Init(path string) error {
 	if err != nil {
 		return fmt.Errorf("open db: %w", err)
 	}
+	_, err = Conn.Exec(`PRAGMA busy_timeout = 3000;`)
+	if err != nil {
+		return fmt.Errorf("set busy_timeout pragma: %w", err)
+	}
 
 	createTable := `
     CREATE TABLE IF NOT EXISTS urls(
@@ -28,6 +32,10 @@ func Init(path string) error {
 	_, err = Conn.Exec(createTable)
 	if err != nil {
 		return fmt.Errorf("migrate: %w", err)
+	}
+	_, err = Conn.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_urls_original_url_unique ON urls(original_url)`)
+	if err != nil {
+		return fmt.Errorf("migrate original_url unique index: %w", err)
 	}
 
 	var hasClickCount bool
