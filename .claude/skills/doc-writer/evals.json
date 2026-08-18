@@ -1,0 +1,64 @@
+[
+  {
+    "id": "ts-readme-basic",
+    "prompt": "Write a README for this TypeScript repo. It's a small HTTP client library called 'fetchly' that wraps the native fetch API with retries, timeouts, and typed responses. Entry point is src/index.ts which exports a `fetchly` function.",
+    "assertions": [
+      "Output contains a # Fetchly heading",
+      "Output includes an installation section with npm install",
+      "Output includes a quick start or usage example with TypeScript code",
+      "Output mentions retries, timeouts, and typed responses as features",
+      "Output is in Markdown format",
+      "Output does NOT contain placeholder text like [Your description here]"
+    ]
+  },
+  {
+    "id": "go-func-docs",
+    "prompt": "Add GoDoc comments to these Go functions:\n\n```go\nfunc ParseToken(tokenStr string) (*Claims, error) {\n\tjwt, err := jwt.ParseWithClaims(tokenStr, &Claims{}, keyFunc)\n\tif err != nil { return nil, err }\n\treturn jwt.Claims.(*Claims), nil\n}\n\nfunc RefreshToken(claims *Claims) (string, error) {\n\tif time.Until(claims.ExpiresAt.Time) > 5*time.Minute {\n\t\treturn \"\", ErrNotExpiringSoon\n\t}\n\treturn signToken(claims)\n}\n```",
+    "assertions": [
+      "Output includes // ParseToken comment starting with 'ParseToken'",
+      "Output documents the error return condition for ParseToken",
+      "Output includes // RefreshToken comment starting with 'RefreshToken'",
+      "Output mentions the 5 minute threshold behavior in RefreshToken comment",
+      "Output mentions ErrNotExpiringSoon",
+      "Comments follow Go convention (no @param tags)",
+      "Comments are placed directly above their function declarations"
+    ]
+  },
+  {
+    "id": "ts-jsdoc",
+    "prompt": "Add JSDoc to this TypeScript function:\n\n```ts\nexport async function uploadFile(\n  file: File,\n  destination: string,\n  opts?: { maxSizeBytes?: number; overwrite?: boolean }\n): Promise<{ url: string; etag: string }> {\n  if (opts?.maxSizeBytes && file.size > opts.maxSizeBytes) {\n    throw new FileTooLargeError(file.size, opts.maxSizeBytes)\n  }\n  // ... upload logic\n}\n```",
+    "assertions": [
+      "Output includes a JSDoc block starting with /**",
+      "Output documents the file parameter",
+      "Output documents the destination parameter",
+      "Output documents opts.maxSizeBytes and opts.overwrite",
+      "Output documents the @returns value (url and etag)",
+      "Output documents @throws FileTooLargeError",
+      "Output includes a @example block",
+      "First line of JSDoc starts with an imperative verb (Upload, Send, etc.)"
+    ]
+  },
+  {
+    "id": "inline-comments-go",
+    "prompt": "Add inline comments to this Go code:\n\n```go\nfunc (s *RateLimiter) Allow(key string) bool {\n\ts.mu.Lock()\n\tdefer s.mu.Unlock()\n\n\tnow := time.Now()\n\tbucket, ok := s.buckets[key]\n\tif !ok {\n\t\ts.buckets[key] = &bucket{tokens: s.rate - 1, last: now}\n\t\treturn true\n\t}\n\n\telapsed := now.Sub(bucket.last).Seconds()\n\tbucket.tokens += elapsed * float64(s.rate)\n\tif bucket.tokens > float64(s.burst) {\n\t\tbucket.tokens = float64(s.burst)\n\t}\n\tbucket.last = now\n\n\tif bucket.tokens >= 1 {\n\t\tbucket.tokens--\n\t\treturn true\n\t}\n\treturn false\n}\n```",
+    "assertions": [
+      "Output explains why s.mu.Lock() is used (concurrent access or similar)",
+      "Output explains the token bucket algorithm or references it by name",
+      "Output explains the burst cap logic",
+      "Output does NOT add obvious/redundant comments like '// lock the mutex' or '// return true'",
+      "Output returns the full function with comments included"
+    ]
+  },
+  {
+    "id": "mixed-request",
+    "prompt": "I need docs for my Go project. It's a CLI tool called 'vault-sync' that syncs secrets from HashiCorp Vault to Kubernetes secrets. Write me a README.",
+    "assertions": [
+      "Output contains a # heading with vault-sync or Vault Sync",
+      "Output mentions HashiCorp Vault and Kubernetes",
+      "Output includes an installation section",
+      "Output includes usage examples (CLI commands)",
+      "Output is in Markdown",
+      "Output includes a features or overview section"
+    ]
+  }
+]
