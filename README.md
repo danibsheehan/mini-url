@@ -4,8 +4,22 @@
 
 > A minimal Go URL shortener with SQLite persistence and click tracking.
 
+## Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [API Endpoints](#api-endpoints)
+- [Curl Cookbook](#curl-cookbook)
+- [Configuration](#configuration)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Overview
-`mini-url` exposes a small HTTP API to create short URLs, redirect short codes to their original targets, and fetch per-link stats. It stores data in SQLite and automatically creates the required schema on startup. The service is intended as a compact learning project and a practical base for extending a URL shortener backend.
+Give it a long URL, get back a short one that redirects to it — and see how many times it's been used. That's the whole product.
+
+Under the hood, `mini-url` exposes a small HTTP API to create short URLs, redirect short codes to their original targets, and fetch per-link stats. It stores data in SQLite and automatically creates the required schema on startup. The service is intended as a compact learning project and a practical base for extending a URL shortener backend.
 
 ## Features
 - Creates 6-character short codes for submitted URLs.
@@ -17,6 +31,12 @@
 - Includes unit tests for handlers, service logic, and DB initialization.
 
 ## Installation
+
+### Prerequisites
+- **Go 1.26.1 or newer** (see [go.mod](./go.mod)).
+- **A C compiler** (e.g. `gcc` or `clang`). The SQLite driver ([go-sqlite3](https://github.com/mattn/go-sqlite3)) uses cgo, so a C toolchain must be available to build — on macOS this comes with Xcode Command Line Tools, on Debian/Ubuntu install `build-essential`.
+- **`make`** (optional) — used by the commands below. Without it, run the underlying `go build`/`go run` commands directly (see the [Makefile](./Makefile)).
+
 ```bash
 git clone git@github.com:danibsheehan/mini-url.git
 cd mini-url
@@ -81,19 +101,19 @@ Success response (`200 OK`):
 ```
 
 Error responses:
-- `400 Bad Request` when JSON body is invalid.
-- `405 Method Not Allowed` when method is not `POST`.
-- `500 Internal Server Error` when persistence fails.
+- `400 Bad Request` (malformed input) when JSON body is invalid.
+- `405 Method Not Allowed` (wrong HTTP verb) when method is not `POST`.
+- `500 Internal Server Error` (something failed server-side) when persistence fails.
 
 ### `GET /{code}`
 Redirect to the original URL for a short code.
 
 Success response:
-- `302 Found` with `Location: <original_url>`
+- `302 Found` (redirect) with `Location: <original_url>` — the browser is sent on to the original URL.
 
 Error responses:
-- `404 Not Found` when code does not exist.
-- `500 Internal Server Error` on server-side lookup errors.
+- `404 Not Found` (no such code) when code does not exist.
+- `500 Internal Server Error` (something failed server-side) on server-side lookup errors.
 
 Notes:
 - `GET /` returns plain text welcome message: `Welcome to Mini URL`.
@@ -108,9 +128,9 @@ Success response (`200 OK`):
 ```
 
 Error responses:
-- `404 Not Found` when code does not exist or path is malformed.
-- `405 Method Not Allowed` when method is not `GET`.
-- `500 Internal Server Error` on server-side lookup errors.
+- `404 Not Found` (no such code) when code does not exist or path is malformed.
+- `405 Method Not Allowed` (wrong HTTP verb) when method is not `GET`.
+- `500 Internal Server Error` (something failed server-side) on server-side lookup errors.
 
 ## Curl Cookbook
 Copy/paste commands for quick manual testing. This flow uses `jq` to extract the generated code automatically.
