@@ -83,10 +83,22 @@ Rules:
 - Handler tests mock `services.Shortener` with a hand-rolled struct of function
   fields (`mockShortener{createFn, resolveFn, statsFn}`), not a mocking
   library. Every subtest constructs the full mock even if only one field is
-  used, wiring unused fields to trivial stubs.
+  used, wiring unused fields to trivial stubs. See `foundations:go-http-testing`
+  for the general guidance on choosing this fake shape (mock the interface)
+  over an `httptest.Server` fake (fake the upstream) based on what a handler
+  actually depends on.
 - Assertions are plain `if got != want { t.Fatalf("<field> = %v, want %v", got, want) }`
   — no assertion library, no `t.Errorf` (use `t.Fatalf` so a subtest stops at
   the first failure).
 - Cover: wrong HTTP method, invalid input, not-found path, generic
   service-error path, and the success path — that's the shape used for every
   existing handler method.
+- `sqlite_shortener_test.go`'s `TestSQLiteShortener_CreateConcurrentSameOriginalReturnsSameCode`
+  proves `Create` is idempotent under concurrent callers (N goroutines racing the same
+  original URL, asserting one winning code and one row) — see `foundations:go-testing`'s
+  concurrent idempotency/coalescing convergence section for the general shape.
+- Retry/backoff around SQLite `busy`/`locked`/constraint errors is tested via an injectable
+  code generator (`newSQLiteShortenerWithGenerator`) to force a deterministic code
+  collision, plus table-driven `busyRetryBackoff` and `sleepWithContext` cancellation tests
+  — see `foundations:go-testing`'s retry/backoff section (this is in fact the pattern that
+  section was generalized from).
