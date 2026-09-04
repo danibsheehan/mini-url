@@ -212,6 +212,14 @@ Project layout:
 - `internal/services`: shortener business logic and SQLite-backed implementation.
 - `internal/db`: database initialization and schema management.
 
+### AI agent tooling
+
+This repo is worked in with Claude Code. Conventions live in
+[AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md). Repo-specific skills sit in
+`.claude/skills/` alongside skills installed from the
+[dani-foundations](https://github.com/danibsheehan/dani-foundations) marketplace (see
+`.claude/settings.json`), namespaced `foundations:*`.
+
 ## Contributing
 No formal contributing guide is included yet. Open an issue or pull request to propose changes.
 

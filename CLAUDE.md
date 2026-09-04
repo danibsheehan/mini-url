@@ -13,8 +13,8 @@ Claude Code auto-discovers and invokes them by task:
 
 - `go-conventions` — this repo's Go package layout, handler/service pattern, error handling,
   and test conventions.
-- `doc-writer` — README / GoDoc / inline-comment generation for this repo.
 
 This repo also installs the shared `foundations` plugin from the `dani-foundations`
-marketplace (see `.claude/settings.json`) for process/docs skills common across projects, and
+marketplace (see `.claude/settings.json`) for process/docs skills common across projects
+(including `doc-writer` for README/GoDoc/inline-comment generation and drift checks), and
 for Go testing mechanics not specific to this repo (`go-http-testing`, `go-testing`).
